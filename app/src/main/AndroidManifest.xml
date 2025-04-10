@@ -42,6 +42,14 @@
             android:exported="false"
             android:theme="@style/Theme.Trial" />
 
+        <activity
+            android:name=".EmailVerificationActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Trial" />
+        <activity
+            android:name=".MobileVerificationActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Trial" />
         <!-- Main Activity (no longer the launcher) -->
         <activity
             android:name=".MainActivity"

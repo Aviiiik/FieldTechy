@@ -1,45 +1,34 @@
 package com.example.trial
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Card
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyJobsScreen() {
+fun MyJobsScreen(navController: NavController) {
+    // Simulated user profile state
+    var userName by remember { mutableStateOf("") }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -57,9 +46,56 @@ fun MyJobsScreen() {
         }
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
+            ProfileCard(userName = userName, onCreateProfile = {
+                navController.navigate("register")
+            })
             SearchBar()
             FilterBar()
-            JobList()
+            JobList(navController = navController)
+        }
+    }
+}
+
+@Composable
+fun ProfileCard(userName: String, onCreateProfile: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Surface(
+                modifier = Modifier.size(64.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Profile Photo",
+                    modifier = Modifier.padding(16.dp),
+                    tint = Color.Gray
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = if (userName.isEmpty()) "Hello, User" else "Hello, $userName",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+                Text(
+                    text = if (userName.isEmpty()) "Create your profile to get started" else "Welcome back!",
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+            }
+            TextButton(onClick = onCreateProfile) {
+                Text(text = if (userName.isEmpty()) "Create Profile" else "Edit")
+            }
         }
     }
 }
@@ -75,7 +111,7 @@ fun SearchBar() {
         placeholder = { Text("Search Jobs") },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
     )
 }
 
@@ -95,9 +131,7 @@ fun FilterBar() {
                 text = filter,
                 color = if (filter == selectedFilter) MaterialTheme.colorScheme.primary else Color.Gray,
                 modifier = Modifier
-                    .clickable {
-                        selectedFilter = filter
-                    },
+                    .clickable { selectedFilter = filter },
                 fontWeight = if (filter == selectedFilter) FontWeight.Bold else FontWeight.Normal
             )
         }
@@ -110,19 +144,17 @@ fun FilterBar() {
 }
 
 @Composable
-fun JobList() {
-    LazyColumn(
-        modifier = Modifier.padding(top = 8.dp)
-    ) {
-        items(count = 2) {
-            JobCard()
+fun JobList(navController: NavController) {
+    LazyColumn(modifier = Modifier.padding(top = 8.dp)) {
+        items(2) {
+            JobCard(navController = navController)
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
 
 @Composable
-fun JobCard() {
+fun JobCard(navController: NavController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -148,8 +180,10 @@ fun JobCard() {
             ) {
                 Text(text = "New Jersey, USA", color = Color.Gray)
                 Text(text = "$1200", fontWeight = FontWeight.Bold, color = Color.Green)
-                OutlinedButton(onClick = { /*TODO*/ }) {
-                    Text(text = "View logs", fontSize = 12.sp)
+                OutlinedButton(onClick = {
+                    navController.navigate("register")
+                }) {
+                    Text(text = "Create a Profile", fontSize = 12.sp)
                 }
             }
         }
@@ -170,9 +204,10 @@ fun Chip(text: String) {
         )
     }
 }
-
 @Preview(showBackground = true)
 @Composable
-fun MyJobsPreview() {
-    MyJobsScreen()
+fun MyJobsScreenPreview() {
+    val navController = rememberNavController()
+    MyJobsScreen(navController)
 }
+

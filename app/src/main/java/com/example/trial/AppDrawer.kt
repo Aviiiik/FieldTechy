@@ -101,8 +101,9 @@ fun AppDrawer() {
                 startDestination = "my_jobs",
                 modifier = Modifier.padding(innerPadding)
             ) {
-                composable("my_jobs") { MyJobsScreen() }
+                composable("my_jobs") { MyJobsScreen(navController) }
                 composable("chat") { ChatScreen() }
+                composable("register") { EngineerRegistrationPage() }
             }
         }
     }

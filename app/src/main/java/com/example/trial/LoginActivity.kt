@@ -39,6 +39,7 @@ class LoginActivity : ComponentActivity() {
                 ) {
                     LoginScreen(
                         onSignInClicked = {
+                            startActivity(Intent(this, MainActivity::class.java))
                             // Handle sign in
                         },
                         onRegisterClicked = {

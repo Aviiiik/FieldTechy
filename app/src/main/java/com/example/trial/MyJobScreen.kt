@@ -1,21 +1,20 @@
 package com.example.trial
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.WorkOutline
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -26,9 +25,6 @@ import androidx.navigation.compose.rememberNavController
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyJobsScreen(navController: NavController) {
-    // Simulated user profile state
-    var userName by remember { mutableStateOf("") }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -36,133 +32,233 @@ fun MyJobsScreen(navController: NavController) {
                     Text(text = "My Jobs", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 },
                 navigationIcon = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
                 }
             )
         }
     ) { padding ->
-        Column(modifier = Modifier.padding(padding)) {
-            ProfileCard(userName = userName, onCreateProfile = {
-                navController.navigate("register")
-            })
-            SearchBar()
-            FilterBar()
-            JobList(navController = navController)
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .verticalScroll(rememberScrollState()) // Make the entire content scrollable
+        ) {
+            ProfileCard(navController)
+            ServicesSection()
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "In Progress",
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+            )
+
+            // In Progress Jobs Section - vertical layout
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Multiple job cards stacked vertically
+                JobCard(navController, "Angular Developer", "New Jersey, USA", "$1200")
+                JobCard(navController, "React Developer", "San Francisco, CA", "$1500")
+                JobCard(navController, "Flutter Developer", "Austin, TX", "$1300")
+            }
+
+            // Add some bottom padding for better scrolling experience
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
 
 @Composable
-fun ProfileCard(userName: String, onCreateProfile: () -> Unit) {
+fun ProfileCard(navController: NavController) {
     Card(
+        shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        shape = RoundedCornerShape(16.dp)
+            .padding(16.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(16.dp)
         ) {
-            Surface(
-                modifier = Modifier.size(64.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surfaceVariant
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Profile Photo",
-                    modifier = Modifier.padding(16.dp),
-                    tint = Color.Gray
-                )
-            }
+            Icon(
+                imageVector = Icons.Default.AccountCircle,
+                contentDescription = "Default Profile",
+                modifier = Modifier.size(48.dp)
+            )
             Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(0.55f) // allocate part of the row width
+            ) {
+                Text(text = "Hello, User", fontWeight = FontWeight.Bold)
                 Text(
-                    text = if (userName.isEmpty()) "Hello, User" else "Hello, $userName",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
-                Text(
-                    text = if (userName.isEmpty()) "Create your profile to get started" else "Welcome back!",
-                    fontSize = 14.sp,
+                    text = "Create your profile to get started",
+                    fontSize = 12.sp,
                     color = Color.Gray
                 )
             }
-            TextButton(onClick = onCreateProfile) {
-                Text(text = if (userName.isEmpty()) "Create Profile" else "Edit")
+            OutlinedButton(onClick = {
+                navController.navigate("register")
+            }) {
+                Text("Create Profile")
             }
         }
     }
 }
 
 @Composable
-fun SearchBar() {
-    OutlinedTextField(
-        value = "",
-        onValueChange = {},
-        leadingIcon = {
-            Icon(imageVector = Icons.Filled.Search, contentDescription = "Search")
-        },
-        placeholder = { Text("Search Jobs") },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-    )
-}
+fun ServicesSection() {
+    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        Text(
+            text = "Available Services",
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
 
-@Composable
-fun FilterBar() {
-    val filters = listOf("All", "Today", "In Progress", "In Hold", "Draft", "Cancelled")
-    var selectedFilter by remember { mutableStateOf("All") }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            ServiceChip("All")
+            ServiceChip("Cloud")
+            ServiceChip("Support")
+            ServiceChip("Network")
+        }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        filters.forEach { filter ->
-            Text(
-                text = filter,
-                color = if (filter == selectedFilter) MaterialTheme.colorScheme.primary else Color.Gray,
-                modifier = Modifier
-                    .clickable { selectedFilter = filter },
-                fontWeight = if (filter == selectedFilter) FontWeight.Bold else FontWeight.Normal
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(text = "My Jobs", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Horizontally scrollable row for job status cards
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // All three cards with fixed equal width
+            JobStatCard(
+                title = "Job Scheduled",
+                count = "4 Jobs",
+                bgColor = Color(0xFFFFF9C4),
+                modifier = Modifier.width(120.dp)
+            )
+            JobStatCard(
+                title = "Job Completed",
+                count = "92 Jobs",
+                bgColor = Color(0xFFC8E6C9),
+                modifier = Modifier.width(120.dp)
+            )
+            JobStatCard(
+                title = "Job Cancelled",
+                count = "12 Jobs",
+                bgColor = Color(0xFFB3E5FC),
+                modifier = Modifier.width(120.dp)
             )
         }
     }
-    Text(
-        text = "Total 37 jobs",
-        modifier = Modifier.padding(start = 16.dp, top = 8.dp),
-        color = Color.Gray
-    )
 }
 
 @Composable
-fun JobList(navController: NavController) {
-    LazyColumn(modifier = Modifier.padding(top = 8.dp)) {
-        items(2) {
-            JobCard(navController = navController)
-            Spacer(modifier = Modifier.height(8.dp))
+fun ServiceChip(text: String) {
+    Surface(
+        color = Color.LightGray.copy(alpha = 0.2f),
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.padding(end = 4.dp)
+    ) {
+        Text(
+            text = text,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            fontSize = 12.sp
+        )
+    }
+}
+
+@Composable
+fun JobStatCard(
+    title: String,
+    count: String,
+    bgColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = bgColor),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Icon(
+                imageVector = Icons.Default.WorkOutline,
+                contentDescription = null,
+                tint = Color.Black
+            )
+            Text(
+                text = title,
+                fontSize = 12.sp,
+                maxLines = 1,
+                softWrap = false
+            )
+            Text(
+                text = count,
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp,
+                maxLines = 1,
+                softWrap = false
+            )
+            OutlinedButton(
+                onClick = { },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Text("View Jobs", fontSize = 12.sp, maxLines = 1, softWrap = false)
+            }
         }
     }
 }
 
 @Composable
-fun JobCard(navController: NavController) {
+fun Chip(text: String) {
+    Surface(
+        color = Color(0xFFE0E0E0),
+        shape = RoundedCornerShape(12.dp),
+    ) {
+        Text(
+            text = text,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            fontSize = 12.sp
+        )
+    }
+}
+
+@Composable
+fun JobCard(
+    navController: NavController,
+    jobTitle: String = "Angular Developer",
+    location: String = "New Jersey, USA",
+    salary: String = "$1200"
+) {
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .fillMaxWidth(),
         shape = RoundedCornerShape(16.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = "Angular Developer", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Text(text = jobTitle, fontWeight = FontWeight.Bold, fontSize = 18.sp)
             Text(text = "In Progress", color = Color.Gray)
             Spacer(modifier = Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -178,36 +274,17 @@ fun JobCard(navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = "New Jersey, USA", color = Color.Gray)
-                Text(text = "$1200", fontWeight = FontWeight.Bold, color = Color.Green)
-                OutlinedButton(onClick = {
-                    navController.navigate("register")
-                }) {
-                    Text(text = "Create a Profile", fontSize = 12.sp)
-                }
+                Text(text = location, color = Color.Gray)
+                Text(text = salary, fontWeight = FontWeight.Bold, color = Color.Green)
+                // "Create a Profile" button removed
             }
         }
     }
 }
 
-@Composable
-fun Chip(text: String) {
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceVariant,
-        shape = RoundedCornerShape(8.dp)
-    ) {
-        Text(
-            text = text,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 12.sp
-        )
-    }
-}
 @Preview(showBackground = true)
 @Composable
 fun MyJobsScreenPreview() {
     val navController = rememberNavController()
     MyJobsScreen(navController)
 }
-
